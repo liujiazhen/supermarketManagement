@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>库存管理</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script src="js/jquery.js"></script>
+    <script src="layui/layui.all.js"></script>
+</head>
+<body style="padding: 20px 15px">
+<div class="layui-card">
+    <div class="layui-card-header">
+        库存管理页面：
+        <div class="layui-inline">
+            <input class="layui-input" name="id" id="namesearch" autocomplete="off">
+        </div>
+        商品编号：
+        <div class="layui-inline">
+            <input class="layui-input" name="category" id="categorysearch" autocomplete="off">
+        </div>
+        <button class="layui-btn" data-type="reload" id="search">搜索</button>
+    </div>
+    <div class="layui-card-body">
+        <!--数据表格-->
+        <table class="layui-hide" id="billList" lay-filter="billList"></table>
+    </div>
+</div>
+</body>
+</html>
+
+<script type="text/html" id="toolbarBill">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="addbill">增加</button>
+    </div>
+</script>
+
+<script type="text/html" id="barBill">
+    <a class="layui-btn layui-btn-xs" lay-event="tijiao">提交</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    ;!function () {
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+        laydate.render({
+            elem: '#createtime',
+            trigger: 'click' //添加这一行来处理
+        });
+
+        laydate.render({
+            elem: '#usetime',
+            trigger: 'click' //添加这一行来处理
+        });
+
+        table.render({
+            elem: '#billList'
+            , url: 'getProductList'
+            , toolbar: '#toolbarBill' //开启头部工具栏，并为其绑定左侧模板
+            , title: '商品单据'
+            , cols: [
+                [
+                    {type: 'checkbox', fixed: 'left'}
+                    , {field: 'id', title: '商品编号'}
+                    , {field: 'name', title: '商品名称'}
+                    , {field: 'category', title: '商品分类'}
+                    , {field: 'unit', title: '单位'}
+                    , {field: 'usetime', title: '创建时间', sort: true}
+                    , {field: 'amountmoney', title: '修改时间', sort: true}
+                    , {fixed: 'right', title: '操作', toolbar: '#barBill', width: 150}
+                ]
+            ]
+            , page: true
+        });
+
+        //头工具栏事件
+        table.on('toolbar(billList)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'addbill':
+                    var data = checkStatus.data;
+                    $("#name").val("");
+                    $("#projectname").val("");
+                    $("#usetime").val("");
+                    $("#amountmoney").val("");
+                    $("#createname").val("");
+                    $("#createtime").val("");
+                    $("input[name='billtype']").get(0).checked = true;
+                    form.render();
+                    layer.open({
+                        type: 1,
+                        area: ['500px', '500px'],
+                        title: '新增商品单据'
+                        , content: $("#addBill"),
+                        shade: 0,
+                        btn: ['保存', '重置']
+                        , btn1: function (index, layero) {
+                            var bill = {};
+                            bill.name = $("#name").val();
+                            bill.projectname = $("#projectname").val();
+                            bill.usetime = $("#usetime").val();
+                            bill.amountmoney = $("#amountmoney").val();
+                            bill.createname = $("#createname").val();
+                            bill.createtime = $("#createtime").val();
+                            bill.billtype = $('input:radio[name="billtype"]:checked').val();
+                            $.ajax({
+                                url: "addBill",
+                                type: "post",
+                                data: bill,
+                                dataType: "json",
+                                success: function (data) {
+                                    table.reload("billList");
+                                    layer.closeAll();
+                                },
+                            });
+
+                        },
+                        btn2: function (index, layero) {
+                            return false;
+                        },
+                        cancel: function (layero, index) {
+                            layer.closeAll();
+                        }
+
+                    });
+                    break;
+            }
+        });
+
+        active = {
+            reload: function () {
+                var namesearch = $('#namesearch');
+                var categorysearch = $('#categorysearch')
+
+                //执行重载
+                table.reload('billList', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        name: "%" + namesearch.val() + "%",
+                        category: "%" + categorysearch.val() + "%"
+                    }
+                }, 'data');
+            }
+        };
+
+
+        $('#search').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        //监听行工具事件
+        table.on('tool(billList)', function (obj) {
+            var data = obj.data;
+            //console.log(obj)
+            if (obj.event === 'del') {
+                layer.confirm('真的删除行么', function (index) {
+                    $.ajax({
+                        url: "delBill?billid=" + data.id,
+                        type: "post",
+                        dataType: "json",
+                        success: function (data) {
+                            obj.del();
+                            layer.close(index);
+                            layer.closeAll();
+                        },
+                    });
+
+                });
+            } else if (obj.event === 'edit') {
+                $("#name").val(data.name);
+                $("#projectname").val(data.projectname);
+                $("#usetime").val(data.usetime);
+                $("#amountmoney").val(data.amountmoney);
+                $("#createname").val(data.createname);
+                $("#createtime").val(data.createtime);
+                $("input[name='billtype'][value='" + data.billtype + "']").attr("checked", true);
+                form.render();
+                layer.open({
+                    type: 1,
+                    area: ['500px', '500px'],
+                    title: '修改商品单据'
+                    , content: $("#addBill"),
+                    shade: 0,
+                    btn: ['保存', '重置']
+                    , btn1: function (index, layero) {
+                        var bill = {};
+                        bill.id = data.id;
+                        bill.status = data.status;
+                        bill.name = $("#name").val();
+                        bill.projectname = $("#projectname").val();
+                        bill.usetime = $("#usetime").val();
+                        bill.amountmoney = $("#amountmoney").val();
+                        bill.createname = data.createname;
+                        bill.createtime = $("#createtime").val();
+                        bill.billtype = $('input:radio[name="billtype"]:checked').val();
+                        $.ajax({
+                            url: "updataBill",
+                            type: "post",
+                            data: bill,
+                            dataType: "json",
+                            success: function (data) {
+                                table.reload("billList");
+                                layer.closeAll();
+                            },
+                        });
+
+                    },
+                    btn2: function (index, layero) {
+                        return false;
+                    },
+                    cancel: function (layero, index) {
+                        layer.closeAll();
+                    }
+
+                });
+            } else if (obj.event === 'tijiao') {
+                $.ajax({
+                    url: "approveBill?id=" + data.id + "&name=" + data.name,
+                    type: "get",
+                    dataType: "json",
+                    success: function (data) {
+                        table.reload("billList");
+                    },
+                });
+            }
+        });
+    }();
+
+</script>
+

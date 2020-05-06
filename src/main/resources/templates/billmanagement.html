@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>账单</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script src="js/jquery.js"></script>
+    <script src="layui/layui.all.js"></script>
+</head>
+<body style="padding: 20px 15px">
+<div class="layui-card">
+    <div class="layui-card-header">
+        报销名称：
+        <div class="layui-inline">
+            <input class="layui-input" name="id" id="namesearch" autocomplete="off">
+        </div>
+        <button class="layui-btn" data-type="reload" id="search">搜索</button>
+    </div>
+    <div class="layui-card-body">
+
+        <table class="layui-hide" id="billList" lay-filter="billList"></table>
+        <div style="padding-top: 15px">
+            <form class="layui-form" id="addBill" style="display:none">
+                <div class="layui-form-item" style="padding-top: 15px">
+                    <label class="layui-form-label">报销名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" required lay-verify="required" placeholder="请输入报销名称" autocomplete="on" class="layui-input" style="width:250px" id="name">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">所属项目</label>
+                    <div class="layui-input-block" style="width: 250px">
+                        <select name="quiz" lay-search id="projectname">
+                            <option value="">请选择</option>
+                            <optgroup label="内部项目">
+                                <option value="平台管理项目">平台管理项目</option>
+                            </optgroup>
+                            <optgroup label="支持项目">
+                                <option value="某地建设项目">某地建设项目</option>
+                                <option value="某地工程项目">某地工程项目</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">金额</label>
+                    <div class="layui-input-block">
+                        <input type="number" required lay-verify="required" placeholder="请输入报销金额" autocomplete="on"
+                               class="layui-input" style="width:250px" id="amountmoney">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">使用时间</label>
+                    <div class="layui-input-block">
+                        <input type="text" class="layui-input" style="width:250px" id="usetime" lay-key="1">
+                    </div>
+                </div>
+                <!--        <div class="layui-form-item">-->
+                <!--            <label class="layui-form-label">报销人</label>-->
+                <!--            <div class="layui-input-block">-->
+                <!--                <input type="text" required lay-verify="required" placeholder="请输入报销人" autocomplete="on"-->
+                <!--                       class="layui-input" style="width:250px" id="createname">-->
+                <!--            </div>-->
+                <!--        </div>-->
+                <div class="layui-form-item">
+                    <label class="layui-form-label">报销时间</label>
+                    <div class="layui-input-block">
+                        <input type="text" class="layui-input" style="width:250px" id="createtime" lay-key="2">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">报销类型</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="billtype" value="差旅费" title="差旅费" checked>
+                        <input type="radio" name="billtype" value="住宿费" title="住宿费">
+                        <input type="radio" name="billtype" value="交通费" title="交通费">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script type="text/html" id="toolbarBill">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="addbill">增加</button>
+    </div>
+</script>
+
+<script type="text/html" id="barBill">
+    <a class="layui-btn layui-btn-xs" lay-event="tijiao">提交</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    ;!function () {
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+        $.ajax({
+            url: "getAllProduct",
+            type: "post",
+            dataType: "json",
+            success: function (data) {
+
+            },
+        });
+
+        laydate.render({
+            elem: '#createtime',
+            trigger: 'click' //添加这一行来处理
+        });
+
+        laydate.render({
+            elem: '#usetime',
+            trigger: 'click' //添加这一行来处理
+        });
+
+        table.render({
+            elem: '#billList'
+            , url: 'getBillList'
+            , toolbar: '#toolbarBill' //开启头部工具栏，并为其绑定左侧模板
+            , title: '报销单据'
+            , cols: [
+                [
+                    {type: 'checkbox', fixed: 'left'}
+                    , {field: 'name', title: '报销名称'}
+                    , {field: 'projectname', title: '所属项目'}
+                    , {field: 'billtype', title: '类型'}
+                    , {field: 'usetime', title: '使用时间', sort: true}
+                    , {field: 'amountmoney', title: '金额', sort: true}
+                    , {field: 'createname', title: '报销人'}
+                    , {field: 'createtime', title: '报销时间', sort: true}
+                    , {fixed: 'right', title: '操作', toolbar: '#barBill', width: 150}
+                ]
+            ]
+            , page: true
+        });
+
+        //头工具栏事件
+        table.on('toolbar(billList)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'addbill':
+                    var data = checkStatus.data;
+                    $("#name").val("");
+                    $("#projectname").val("");
+                    $("#usetime").val("");
+                    $("#amountmoney").val("");
+                    $("#createname").val("");
+                    $("#createtime").val("");
+                    $("input[name='billtype']").get(0).checked = true;
+                    form.render();
+                    layer.open({
+                        type: 1,
+                        area: ['500px', '500px'],
+                        title: '新增报销单据'
+                        , content: $("#addBill"),
+                        shade: 0,
+                        btn: ['保存', '重置']
+                        , btn1: function (index, layero) {
+                            var bill = {};
+                            bill.name = $("#name").val();
+                            bill.projectname = $("#projectname").val();
+                            bill.usetime = $("#usetime").val();
+                            bill.amountmoney = $("#amountmoney").val();
+                            bill.createname = $("#createname").val();
+                            bill.createtime = $("#createtime").val();
+                            bill.billtype = $('input:radio[name="billtype"]:checked').val();
+                            $.ajax({
+                                url: "addBill",
+                                type: "post",
+                                data: bill,
+                                dataType: "json",
+                                success: function (data) {
+                                    table.reload("billList");
+                                    layer.closeAll();
+                                },
+                            });
+
+                        },
+                        btn2: function (index, layero) {
+                            return false;
+                        },
+                        cancel: function (layero, index) {
+                            layer.closeAll();
+                        }
+
+                    });
+                    break;
+            }
+        });
+
+        active = {
+            reload: function () {
+                var namesearch = $('#namesearch');
+
+                //执行重载
+                table.reload('billList', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        name: "%" + namesearch.val() + "%"
+                    }
+                }, 'data');
+            }
+        };
+
+
+        $('#search').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        //监听行工具事件
+        table.on('tool(billList)', function (obj) {
+            var data = obj.data;
+            //console.log(obj)
+            if (obj.event === 'del') {
+                layer.confirm('真的删除行么', function (index) {
+                    $.ajax({
+                        url: "delBill?billid=" + data.id,
+                        type: "post",
+                        dataType: "json",
+                        success: function (data) {
+                            obj.del();
+                            layer.close(index);
+                            layer.closeAll();
+                        },
+                    });
+
+                });
+            } else if (obj.event === 'edit') {
+                $("#name").val(data.name);
+                $("#projectname").val(data.projectname);
+                $("#usetime").val(data.usetime);
+                $("#amountmoney").val(data.amountmoney);
+                $("#createname").val(data.createname);
+                $("#createtime").val(data.createtime);
+                $("input[name='billtype'][value='" + data.billtype + "']").attr("checked", true);
+                form.render();
+                layer.open({
+                    type: 1,
+                    area: ['500px', '500px'],
+                    title: '修改报销单据'
+                    , content: $("#addBill"),
+                    shade: 0,
+                    btn: ['保存', '重置']
+                    , btn1: function (index, layero) {
+                        var bill = {};
+                        bill.id = data.id;
+                        bill.status = data.status;
+                        bill.name = $("#name").val();
+                        bill.projectname = $("#projectname").val();
+                        bill.usetime = $("#usetime").val();
+                        bill.amountmoney = $("#amountmoney").val();
+                        bill.createname = data.createname;
+                        bill.createtime = $("#createtime").val();
+                        bill.billtype = $('input:radio[name="billtype"]:checked').val();
+                        $.ajax({
+                            url: "updataBill",
+                            type: "post",
+                            data: bill,
+                            dataType: "json",
+                            success: function (data) {
+                                table.reload("billList");
+                                layer.closeAll();
+                            },
+                        });
+
+                    },
+                    btn2: function (index, layero) {
+                        return false;
+                    },
+                    cancel: function (layero, index) {
+                        layer.closeAll();
+                    }
+
+                });
+            } else if (obj.event === 'tijiao') {
+                $.ajax({
+                    url: "approveBill?id=" + data.id + "&name=" + data.name,
+                    type: "get",
+                    dataType: "json",
+                    success: function (data) {
+                        table.reload("billList");
+                    },
+                });
+            }
+        });
+    }();
+
+</script>
+

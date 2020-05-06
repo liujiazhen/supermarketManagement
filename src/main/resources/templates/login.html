@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html lang="zxx">
+
+<head>
+	<title>Home</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="UTF-8" />
+	<link rel="stylesheet" href="layui/css1/style.css" type="text/css" media="all" />
+</head>
+<body>
+	<div id="bg">
+		<canvas></canvas>
+		<canvas></canvas>
+		<canvas></canvas>
+	</div>
+
+	<h1>超市进销管理系统</h1>
+
+	<div class="sub-main-w3">
+		<form action="security/login" method="post">
+			<h2>Login Now
+				<i class="fas fa-level-down-alt"></i>
+			</h2>
+			<div class="form-style-agile">
+				<label>
+					<i class="fas fa-user"></i>
+					Username
+				</label>
+				<input id="username" placeholder="Username" name="username" type="text" required="">
+			</div>
+			<div class="form-style-agile">
+				<label>
+					<i class="fas fa-unlock-alt"></i>
+					Password
+				</label>
+				<input id="password" placeholder="Password" name="password" type="password" required="">
+			</div>
+			<button id="login" onclick="login()">Log In</button>
+		</form>
+	</div>
+
+	<div class="footer">
+		<p>Copyright &copy; 2020.Management All rights reserved</a></p>
+	</div>
+
+	<script src="js/jquery.js"></script>
+
+	<script src="js/effect.js"></script>
+	<script>
+		var pFocus = document.getElementById("username");
+
+		pFocus.focus();
+		function login() {
+			$.ajax({
+				type: 'post',
+				contentType: "application/json; charset=utf-8",
+				url: "security/login?username=" + $("#username").val() + "&password=" + $("#password").val(),
+				success: function (data) {
+					window.location.href = "index";
+				}
+			})
+		}
+
+		function regeritUser() {
+			window.location.href = "regerit";
+		}
+	</script>
+</body>
+
+</html>
+
+

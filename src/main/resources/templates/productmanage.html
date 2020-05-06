@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>商品管理</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script src="js/jquery.js"></script>
+    <script src="layui/layui.all.js"></script>
+</head>
+<body style="padding: 20px 15px">
+<div class="layui-card">
+    <div class="layui-card-header">
+        商品名称：
+        <div class="layui-inline">
+            <input class="layui-input" name="id" id="namesearch" autocomplete="off">
+        </div>
+        商品编号：
+        <div class="layui-inline">
+            <input class="layui-input" name="category" id="categorysearch" autocomplete="off">
+        </div>
+        <button class="layui-btn" data-type="reload" id="search">搜索</button>
+    </div>
+    <div class="layui-card-body">
+        <!--数据表格-->
+        <table class="layui-hide" id="productList" lay-filter="productList"></table>
+        <!--新增窗口-->
+        <div style="padding-top: 15px">
+            <form class="layui-form" id="addProduct" style="display:none">
+                <div class="layui-form-item" style="padding-top: 15px">
+                    <label class="layui-form-label">商品名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" required lay-verify="required" placeholder="请输入商品名称" autocomplete="on"
+                               class="layui-input" style="width:250px" id="name">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">商品类型</label>
+                    <div class="layui-input-block" style="width: 250px">
+                        <select name="category" lay-search id="category">
+                            <option value="蔬菜">蔬菜</option>
+                            <option value="水果">水果</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item" style="padding-top: 15px">
+                    <label class="layui-form-label">商品单位</label>
+                    <div class="layui-input-block">
+                        <input type="text" required lay-verify="required" placeholder="请输入商品单位" autocomplete="on"
+                               class="layui-input" style="width:250px" id="unit">
+                    </div>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script type="text/html" id="toolbarProduct">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="addProduct">新增商品</button>
+    </div>
+</script>
+
+<script type="text/html" id="barProduct">
+<!--    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>-->
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    ;!function () {
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+        table.render({
+            elem: '#productList'
+            , url: 'getProductList'
+            , method: 'post'
+            , contentType: 'application/json'
+            , toolbar: '#toolbarProduct' //开启头部工具栏，并为其绑定左侧模板
+            , title: '商品单据'
+            , cols: [
+                [
+                    {type: 'checkbox', fixed: 'left'}
+                    , {field: 'id', title: '商品编号'}
+                    , {field: 'name', title: '商品名称'}
+                    , {field: 'category', title: '商品分类', sort: true}
+                    , {field: 'unit', title: '单位', sort: true}
+                    , {field: 'createDate', title: '创建时间', sort: true}
+                    , {fixed: 'right', title: '操作', toolbar: '#barProduct', width: 150}
+                ]
+            ]
+            , page: true
+        });
+
+        active = {
+            reload: function () {
+                var namesearch = $('#namesearch');
+                var categorysearch = $('#categorysearch')
+
+                //执行重载
+                table.reload('productList', {
+                    page: {
+                        page: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        name: namesearch.val(),
+                        category: categorysearch.val()
+                    }
+                }, 'data');
+            }
+        };
+
+        //头工具栏事件
+        table.on('toolbar(productList)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'addProduct':
+                    var data = checkStatus.data;
+                    $("#name").val("");
+                    $("#unit").val("");
+                    form.render();
+                    layer.open({
+                        type: 1,
+                        area: ['500px', '400px'],
+                        title: '新增商品',
+                        content: $("#addProduct"),
+                        shade: 0,
+                        btn: ['保存', '关闭'],
+                        btn1: function (index, layero) {
+                            var product = {};
+                            product.name = $("#name").val();
+                            product.category = $("#category").val();
+                            product.unit = $("#unit").val();
+                            $.ajax({
+                                url: "addProduct",
+                                type: "post",
+                                data: product,
+                                dataType: "json",
+                                success: function (data) {
+                                    table.reload("productList");
+                                    layer.closeAll();
+                                },
+                            });
+                        },
+                        btn2: function (index, layero) {
+                            layer.closeAll();
+                        },
+                        cancel: function (layero, index) {
+                            layer.closeAll();
+                        }
+
+                    });
+                    break;
+            }
+        });
+
+
+        $('#search').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        //监听行工具事件
+        table.on('tool(productList)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'del') {
+                layer.confirm('真的删除行么', function (index) {
+                    $.ajax({
+                        url: "deleteProduct?id=" + data.id,
+                        type: "get",
+                        dataType: "json",
+                        success: function (data) {
+                            obj.del();
+                            layer.close(index);
+                            layer.closeAll();
+                            table.reload("productList");
+                        },
+                    });
+
+                });
+            } else if (obj.event === 'edit') {
+                $("#name").val(data.name);
+                $("#projectname").val(data.projectname);
+                $("#usetime").val(data.usetime);
+                $("#amountmoney").val(data.amountmoney);
+                $("#createname").val(data.createname);
+                $("#createtime").val(data.createtime);
+                $("input[name='billtype'][value='" + data.billtype + "']").attr("checked", true);
+                form.render();
+                layer.open({
+                    type: 1,
+                    area: ['500px', '500px'],
+                    title: '修改商品单据'
+                    , content: $("#addProduct"),
+                    shade: 0,
+                    btn: ['保存', '重置']
+                    , btn1: function (index, layero) {
+                        var bill = {};
+                        bill.id = data.id;
+                        bill.status = data.status;
+                        bill.name = $("#name").val();
+                        bill.projectname = $("#projectname").val();
+                        bill.usetime = $("#usetime").val();
+                        bill.amountmoney = $("#amountmoney").val();
+                        bill.createname = data.createname;
+                        bill.createtime = $("#createtime").val();
+                        bill.billtype = $('input:radio[name="billtype"]:checked').val();
+                        $.ajax({
+                            url: "updataBill",
+                            type: "post",
+                            data: bill,
+                            dataType: "json",
+                            success: function (data) {
+                                table.reload("productList");
+                                layer.closeAll();
+                            },
+                        });
+
+                    },
+                    btn2: function (index, layero) {
+                        return false;
+                    },
+                    cancel: function (layero, index) {
+                        layer.closeAll();
+                    }
+
+                });
+            }
+        });
+    }();
+
+</script>
+

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>进货订单管理</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script src="js/jquery3.js"></script>
+    <script src="layui/layui.all.js"></script>
+</head>
+<body style="padding: 20px 15px">
+<div class="layui-card">
+    <div class="layui-card-header">
+        商品名称：
+        <div class="layui-inline">
+            <input class="layui-input" id="namesearch" autocomplete="off">
+        </div>
+        &nbsp;&nbsp;&nbsp;&nbsp;商品分类：
+        <div class="layui-inline">
+            <input class="layui-input" id="categorysearch" autocomplete="off">
+        </div>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <button class="layui-btn" data-type="reload" id="search"><i class="layui-icon layui-icon-search"></i>查询</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <div class="layui-inline">
+            <input type="text" style="border: 0;background: #FFFFFF" id="todayElem" disabled/>
+        </div>
+        <div class="layui-inline">
+            <input type="text" style="display: none" id="createDate" disabled/>
+        </div>
+    </div>
+    <div class="layui-card-body">
+        <!--数据表格-->
+        <table class="layui-hide" id="orderList" lay-filter="orderList"></table>
+        
+        <div style="padding-top: 20px">
+            <div class="layui-form" id="saveOrder" style="display:none">
+                <div class="layui-form-item" style="padding-top: 15px">
+                    <label class="layui-form-label">商品名称</label>
+                    <div class="layui-input-inline">
+                        <select id="productName" name="productName" lay-filter="productName" lay-verify="required">
+                            <option value="">--请选择--</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">数量</label>
+                    <div class="layui-input-inline">
+                        <input type="number" lay-verify="required" placeholder="请输入数量" autocomplete="on" class="layui-input" id="qty">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">商品单位</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="productUnit" placeholder="商品单位" disabled="">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">商品类型</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="productCategory" placeholder="商品分类" disabled="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script type="text/html" id="toolbarproduct">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="saveOrder"><i class="layui-icon layui-icon-add-1"></i>新增订单</button>
+    </div>
+</script>
+
+<script type="text/html" id="barproduct">
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="tijiao">提交</a>-->
+<!--    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>-->
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    ;!function () {
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+        laydate.render({
+            elem: '#todayElem',
+            format: 'yyyy-MM-dd',
+            value: new Date()
+        });
+        laydate.render({
+            elem: '#createDate',
+            format: 'yyyy-MM-dd HH:mm:ss',
+            value: new Date()
+        });
+
+        // 加载table
+        table.render({
+            elem: '#orderList',
+            url: 'getOrderList',
+            method: 'post',
+            where: {createDate: '2020-01-01 00:00:00'},
+            contentType: 'application/json',
+            toolbar: '#toolbarproduct', //开启头部工具栏，并为其绑定左侧模板, title: '订单单据'
+            cols: [
+                [
+                    {type: 'checkbox', fixed: 'left'}
+                    , {field: 'id', title: '订单编号'}
+                    , {field: 'productId', title: '商品编号'}
+                    , {field: 'productName', title: '商品名称'}
+                    , {field: 'productCategory', title: '商品分类', sort: true}
+                    , {field: 'qty', title: '数量', sort: true}
+                    , {field: 'productUnit', title: '商品单位'}
+                    , {field: 'createDate', title: '创建时间', width:160}
+                    , {field: 'updateDate', title: '修改时间', width:160}
+                    , {field: 'supermarket', title: '所属超市'}
+                    , {field: 'inventoryFlag', title: '库存标志', templet: function (d) {
+                        if (d.inventoryFlag=='0') {
+                            return '<span style="color: #990000;">未入库</span>'
+                        } else {
+                            return '<span style="color: #009900;">已入库</span>'
+                        }
+                    }}
+                    , {fixed: 'right', title: '操作', toolbar: '#barproduct', width: 150}
+                ]
+            ]
+            , page: true
+        });
+
+        // 新增订单商品名称下拉列表
+        $.ajax({
+            url: "getAllProductIdAndName",
+            type: "post",
+            dataType: "json",
+            cache: true,
+            success: function (data) {
+                let res = data.data;
+                for(let j = 0; j < res.length; j++) {
+                    $("#productName").append("<option value=\"" + res[j].id + "\">" + res[j].name + "</option>");
+                }
+                form.render('select', 'productName');
+            },
+        });
+
+        // 表单选择事件
+        form.on('select(productName)', function(data){
+            $.ajax({
+                url: "getProductById/" + data.value,
+                type: "post",
+                dataType: "json",
+                cache: true,
+                success: function (data) {
+                    $("#productUnit").val(data.unit);
+                    $("#productCategory").val(data.category);
+                },
+            });
+        });
+
+        //头工具栏事件
+        table.on('toolbar(orderList)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'saveOrder':
+                    $("#qty").val("");
+                    $("#productUnit").val("");
+                    $("#productCategory").val("");
+                    $("#productName").get(0).checked = true;
+                    form.render();
+                    layer.open({
+                        type: 1,
+                        area: ['500px', '400px'],
+                        title: '新增订单',
+                        content: $("#saveOrder"),
+                        shade: 0,
+                        btn: ['保存', '重置']
+                        , btn1: function (index, layero) {
+                            let order = {};
+                            order.productId = $("#productName").val();
+                            order.productName = $("#productName").find("option:selected").text();
+                            order.qty = $("#qty").val();
+                            order.productUnit = $("#productUnit").val();
+                            order.productCategory = $("#productCategory").val();
+                            $.ajax({
+                                url: "saveOrder",
+                                type: "post",
+                                data: order,
+                                dataType: "json",
+                                success: function (data) {
+                                    table.reload("orderList");
+                                    layer.closeAll();
+                                },
+                            });
+
+                        },
+                        btn2: function (index, layero) {
+                            return false;
+                        },
+                        cancel: function (layero, index) {
+                            layer.closeAll();
+                        }
+
+                    });
+                    break;
+            }
+        });
+
+        active = {
+            reload: function () {
+                //执行重载
+                table.reload('orderList', {
+                    page: {
+                        page: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        productName: $("#namesearch").val(),
+                        createDate: $("#createDate").val(),
+                        productCategory: $("#categorysearch").val(),
+                    }
+                }, 'data');
+            }
+        };
+
+
+        $('#search').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        //监听行工具事件
+        table.on('tool(orderList)', function (obj) {
+            var data = obj.data;
+            //console.log(obj)
+            if (obj.event === 'del') {
+                layer.confirm('真的删除行么', function (index) {
+                    $.ajax({
+                        url: "orderDelete?id=" + data.id,
+                        type: "get",
+                        dataType: "json",
+                        success: function (data) {
+                            obj.del();
+                            layer.close(index);
+                            layer.closeAll();
+                        },
+                    });
+
+                });
+            } else if (obj.event === 'edit') {
+                $("#name").val(data.name);
+                $("#projectname").val(data.projectname);
+                $("#usetime").val(data.usetime);
+                $("#amountmoney").val(data.amountmoney);
+                $("#createname").val(data.createname);
+                $("#createtime").val(data.createtime);
+                $("input[name='producttype'][value='" + data.producttype + "']").attr("checked", true);
+                form.render();
+                layer.open({
+                    type: 1,
+                    area: ['500px', '500px'],
+                    title: '修改订单'
+                    , content: $("#saveOrder"),
+                    shade: 0,
+                    btn: ['保存', '重置']
+                    , btn1: function (index, layero) {
+                        var product = {};
+                        product.id = data.id;
+                        product.status = data.status;
+                        product.name = $("#name").val();
+                        product.projectname = $("#projectname").val();
+                        product.usetime = $("#usetime").val();
+                        product.amountmoney = $("#amountmoney").val();
+                        product.createname = data.createname;
+                        product.createtime = $("#createtime").val();
+                        product.producttype = $('input:radio[name="producttype"]:checked').val();
+                        $.ajax({
+                            url: "updataproduct",
+                            type: "post",
+                            data: product,
+                            dataType: "json",
+                            success: function (data) {
+                                table.reload("orderList");
+                                layer.closeAll();
+                            },
+                        });
+
+                    },
+                    btn2: function (index, layero) {
+                        return false;
+                    },
+                    cancel: function (layero, index) {
+                        layer.closeAll();
+                    }
+
+                });
+            } else if (obj.event === 'tijiao') {
+                $.ajax({
+                    url: "orderDelete?id=" + data.id,
+                    type: "get",
+                    dataType: "json",
+                    success: function (data) {
+                        table.reload("orderList");
+                    },
+                });
+            }
+        });
+    }();
+
+</script>
+

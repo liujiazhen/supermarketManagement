@@ -1,0 +1,58 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=divice-width, initial-scale=1.0">
+    <title>超市进销管理系统</title>
+</head>
+<body>
+<a href="javascript:;">超市进销管理系统</a>
+</body>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+    }
+    body{
+        background: #000;
+    }
+    a{
+        text-decoration: none;/*why set text-decoration as none?*/
+        position:absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);/*translate the button self*/
+        font-size: 24px;
+        background: linear-gradient(90deg, #03a9f4, #f441a5, #ffeb3b, #03a9f4);
+        background-size: 400%;
+        width: 400px;
+        height: 100px;
+        line-height: 100px;/*this means the height the text self */
+        text-align: center;
+        color: #fff;
+        text-transform: capitalize;
+        border-radius: 50px;/*make the profile round*/
+        z-index: 1;
+    }
+    a::before{
+        content: "";
+        position: absolute;
+        left: -5px;
+        top: -5px;
+        right: -5px;
+        bottom: -5px;
+        background: linear-gradient(90deg, #03a9f4, #f441a5, #ffeb3b, #03a9f4);
+        background-size: 400%;
+        border-radius: 50px;
+        filter: blur(20px);
+        z-index: -1;
+    }
+    a:hover::before, a:hover{
+        animation: sun 8s infinite;
+    }
+    @keyframes sun{
+        100%{
+            background-position: -400% 0;
+        }
+    }
+</style>
+</html>
