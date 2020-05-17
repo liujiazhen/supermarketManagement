@@ -44,6 +44,18 @@ public class OrderController {
         return resultMap;
     }
 
+    @RequestMapping("/getOrderList2")
+    public Map<String, Object> getProductList2(@RequestBody Order order) {
+        Page<Order> orderPage = orderService.getAllByPage2(order);
+
+        Map<String, Object> resultMap = new HashMap<>(4);
+        resultMap.put("code", "0");
+        resultMap.put("msg", "");
+        resultMap.put("data", orderPage.getContent());
+        resultMap.put("count", orderPage.getTotalElements());
+        return resultMap;
+    }
+
     @RequestMapping("/saveOrder")
     public int saveOrder(Order order) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

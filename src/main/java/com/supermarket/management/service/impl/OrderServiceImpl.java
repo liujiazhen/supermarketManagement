@@ -53,6 +53,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Page<Order> getAllByPage2(Order order) {
+        Pageable pageable = PageRequest.of(order.getPage() - 1, order.getLimit());
+        if (order.getSupermarket() != null && !"".equals(order.getSupermarket())) {
+            return orderDao.getAllBySupermarket(order.getSupermarket(), pageable);
+        } else {
+            return orderDao.getAll(pageable);
+        }
+    }
+
+    @Override
     public Order saveOrder(Order order) {
         Date date = new Date();
         order.setCreateDate(date);
@@ -66,7 +76,9 @@ public class OrderServiceImpl implements OrderService {
         orderDao.deleteById(id);
     }
 
-    @Autowired private InventoryDao inventoryDao;
+    @Autowired
+    private InventoryDao inventoryDao;
+
     @Override
     public int orderToInventory(Long id) {
         Order order = orderDao.getOne(id);

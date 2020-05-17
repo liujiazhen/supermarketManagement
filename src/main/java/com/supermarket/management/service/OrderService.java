@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 public interface OrderService {
 
     Page<Order> getAllByPage(Order order);
+    Page<Order> getAllByPage2(Order order);
 
     Order saveOrder(Order order);
 
