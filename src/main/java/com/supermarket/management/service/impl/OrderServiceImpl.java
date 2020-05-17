@@ -1,6 +1,8 @@
 package com.supermarket.management.service.impl;
 
+import com.supermarket.management.dao.InventoryDao;
 import com.supermarket.management.dao.OrderDao;
+import com.supermarket.management.entity.Inventory;
 import com.supermarket.management.entity.Order;
 import com.supermarket.management.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -60,5 +64,30 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void deleteOrder(Long id) {
         orderDao.deleteById(id);
+    }
+
+    @Autowired private InventoryDao inventoryDao;
+    @Override
+    public int orderToInventory(Long id) {
+        Order order = orderDao.getOne(id);
+        if ("1".equals(order.getInventoryFlag())) {
+            return 1;
+        }
+        int x = orderDao.updateInventory(id);
+        Inventory inventory = inventoryDao.getInventoryByProductIdAndProductCategoryAndSupermarket(order.getProductId(), order.getProductCategory(), order.getSupermarket());
+        if (inventory != null) {
+            inventoryDao.addInventory(inventory.getId(), order.getQty());
+        } else {
+            Inventory temp = new Inventory();
+            temp.setProductId(order.getProductId());
+            temp.setProductName(order.getProductName());
+            temp.setProductUnit(order.getProductUnit());
+            temp.setProductCategory(order.getProductCategory());
+            temp.setQty(order.getQty());
+            temp.setSupermarket(order.getSupermarket());
+            temp.setCreateDate(new Date());
+            inventoryDao.save(temp);
+        }
+        return 0;
     }
 }

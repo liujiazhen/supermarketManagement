@@ -71,5 +71,10 @@ public class OrderController {
         return resultMap;
     }
 
+    @RequestMapping("/orderToInventory")
+    public int orderToInventory(Long id) {
+        orderService.orderToInventory(id);
+        return 1;
+    }
 
 }

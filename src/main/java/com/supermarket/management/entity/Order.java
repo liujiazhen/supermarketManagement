@@ -9,6 +9,7 @@ import java.util.Date;
 @Entity
 @Table(name = "t_order")
 public class Order implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -142,5 +143,24 @@ public class Order implements Serializable {
 
     public void setQty(Long qty) {
         this.qty = qty;
+    }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "id=" + id +
+                ", productId=" + productId +
+                ", productName='" + productName + '\'' +
+                ", qty=" + qty +
+                ", productCategory='" + productCategory + '\'' +
+                ", productUnit='" + productUnit + '\'' +
+                ", userId='" + userId + '\'' +
+                ", createDate=" + createDate +
+                ", updateDate=" + updateDate +
+                ", supermarket='" + supermarket + '\'' +
+                ", inventoryFlag='" + inventoryFlag + '\'' +
+                ", page=" + page +
+                ", limit=" + limit +
+                '}';
     }
 }

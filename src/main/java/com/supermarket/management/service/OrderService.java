@@ -10,4 +10,6 @@ public interface OrderService {
     Order saveOrder(Order order);
 
     void deleteOrder(Long id);
+
+    int orderToInventory(Long id);
 }
