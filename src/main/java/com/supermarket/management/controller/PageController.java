@@ -87,5 +87,13 @@ public class PageController {
     public String supermarketManagement() {
         return "supermarketManagement";
     }
+    @RequestMapping("/inventoryManagement")
+    public String inventoryManagement() {
+        return "inventoryManagement";
+    }
+    @RequestMapping("/supermarketInventoryManagement")
+    public String supermarketInventoryManagement() {
+        return "supermarketInventoryManagement";
+    }
 
 }

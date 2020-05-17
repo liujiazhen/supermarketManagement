@@ -2,6 +2,7 @@ package com.supermarket.management.entity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Table(name = "t_inventory")
@@ -21,6 +22,47 @@ public class Inventory implements Serializable {
     private String productUnit;
 
     private String userId;
+
+    private String supermarket;
+
+    private Date createDate;
+
+    @Transient
+    private int page;
+    @Transient
+    private int limit;
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public String getSupermarket() {
+        return supermarket;
+    }
+
+    public void setSupermarket(String supermarket) {
+        this.supermarket = supermarket;
+    }
 
     public Long getId() {
         return id;
@@ -76,5 +118,22 @@ public class Inventory implements Serializable {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public String toString() {
+        return "Inventory{" +
+                "id=" + id +
+                ", productId=" + productId +
+                ", productName='" + productName + '\'' +
+                ", qty=" + qty +
+                ", productCategory='" + productCategory + '\'' +
+                ", productUnit='" + productUnit + '\'' +
+                ", userId='" + userId + '\'' +
+                ", supermarket='" + supermarket + '\'' +
+                ", createDate=" + createDate +
+                ", page=" + page +
+                ", limit=" + limit +
+                '}';
     }
 }

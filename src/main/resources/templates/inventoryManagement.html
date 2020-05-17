@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>库存管理</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script src="js/jquery.js"></script>
+    <script src="layui/layui.all.js"></script>
+</head>
+<body style="padding: 20px 15px">
+<div class="layui-card">
+    <div class="layui-card-header">
+        商品名称：
+        <div class="layui-inline">
+            <input class="layui-input" name="id" id="namesearch" autocomplete="off">
+        </div>
+        <button class="layui-btn" data-type="reload" id="search">搜索</button>
+    </div>
+    <div class="layui-card-body">
+        <!--数据表格-->
+        <table class="layui-hide" id="inventoryList" lay-filter="inventoryList"></table>
+
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    ;!function () {
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+        table.render({
+            elem: '#inventoryList'
+            , url: 'getInventoryList'
+            , method: 'post'
+            , contentType: 'application/json'
+            , toolbar: true //开启头部工具栏，并为其绑定左侧模板
+            , title: '商品单据'
+            , cols: [
+                [
+                    {type: 'checkbox', fixed: 'left'}
+                    , {field: 'id', title: '库存ID'}
+                    , {field: 'productName', title: '商品名称'}
+                    , {field: 'productCategory', title: '商品分类', sort: true}
+                    , {field: 'productUnit', title: '单位', sort: true}
+                    /*, {field: 'createDate', title: '创建时间', sort: true, width: 150}*/
+                    , {field: 'qty', title: '数量', sort: true}
+                    , {field: 'supermarket', title: '所在超市', sort: true}
+                ]
+            ]
+            , page: true
+        });
+
+        active = {
+            reload: function () {
+                var namesearch = $('#namesearch');
+
+                //执行重载
+                table.reload('inventoryList', {
+                    page: {
+                        page: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        productName: namesearch.val(),
+                    }
+                }, 'data');
+            }
+        };
+
+        $('#search').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        //监听行工具事件
+        table.on('tool(inventoryList)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'del') {
+                layer.confirm('真的删除行么', function (index) {
+                    $.ajax({
+                        url: "deleteProduct?id=" + data.id,
+                        type: "get",
+                        dataType: "json",
+                        success: function (data) {
+                            obj.del();
+                            layer.close(index);
+                            layer.closeAll();
+                            table.reload("inventoryList");
+                        },
+                    });
+
+                });
+            } else if (obj.event === 'edit') {
+                $("#name").val(data.name);
+                $("#projectname").val(data.projectname);
+                $("#usetime").val(data.usetime);
+                $("#amountmoney").val(data.amountmoney);
+                $("#createname").val(data.createname);
+                $("#createtime").val(data.createtime);
+                $("input[name='billtype'][value='" + data.billtype + "']").attr("checked", true);
+                form.render();
+                layer.open({
+                    type: 1,
+                    area: ['500px', '500px'],
+                    title: '修改商品单据'
+                    , content: $("#addProduct"),
+                    shade: 0,
+                    btn: ['保存', '重置']
+                    , btn1: function (index, layero) {
+                        var bill = {};
+                        bill.id = data.id;
+                        bill.status = data.status;
+                        bill.name = $("#name").val();
+                        bill.projectname = $("#projectname").val();
+                        bill.usetime = $("#usetime").val();
+                        bill.amountmoney = $("#amountmoney").val();
+                        bill.createname = data.createname;
+                        bill.createtime = $("#createtime").val();
+                        bill.billtype = $('input:radio[name="billtype"]:checked').val();
+                        $.ajax({
+                            url: "updataBill",
+                            type: "post",
+                            data: bill,
+                            dataType: "json",
+                            success: function (data) {
+                                table.reload("inventoryList");
+                                layer.closeAll();
+                            },
+                        });
+
+                    },
+                    btn2: function (index, layero) {
+                        return false;
+                    },
+                    cancel: function (layero, index) {
+                        layer.closeAll();
+                    }
+
+                });
+            }
+        });
+    }();
+
+</script>
+

@@ -6,6 +6,8 @@ import com.supermarket.management.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -20,5 +22,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public User insertUser(User user) {
         return userDao.save(user);
+    }
+
+    @Override
+    public List<String> getAllSupermarket() {
+        return userDao.getAllSupermarket();
     }
 }

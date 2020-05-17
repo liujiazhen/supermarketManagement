@@ -19,8 +19,10 @@
             <input class="layui-input" id="categorysearch" autocomplete="off">
         </div>
         &nbsp;&nbsp;&nbsp;&nbsp;所属超市：
-        <div class="layui-inline">
-            <input class="layui-input" id="supermarketsearch" autocomplete="off">
+        <div class="layui-input-inline">
+            <select id="supermarketName" name="supermarketName" lay-filter="supermarketName" lay-verify="required">
+                <option value="">--请选择--</option>
+            </select>
         </div>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <button class="layui-btn" data-type="reload" id="search"><i class="layui-icon layui-icon-search"></i>查询
@@ -45,7 +47,6 @@
             elem: '#orderList',
             url: 'getOrderList',
             method: 'post',
-            where: {createDate: '2020-01-01 00:00:00'},
             contentType: 'application/json',
             cols: [
                 [
@@ -88,7 +89,20 @@
                 }, 'data');
             }
         };
-
+        // 历史订单获取超市下拉列表
+        $.ajax({
+            url: "getAllSupermarket",
+            type: "post",
+            dataType: "json",
+            cache: true,
+            success: function (data) {
+                let res = data.data;
+                for(let j = 0; j < res.length; j++) {
+                    $("#supermarketName").append("<option value=\"" + res[j].id + "\">" + res[j].name + "</option>");
+                }
+                form.render('select', 'productName');
+            },
+        });
 
         $('#search').on('click', function () {
             var type = $(this).data('type');
