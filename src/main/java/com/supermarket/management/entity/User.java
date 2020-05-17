@@ -24,6 +24,37 @@ public class User implements Serializable {
 
     private String supermarket;
 
+    private String phone;
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    @Transient
+    private int page;
+    @Transient
+    private int limit;
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
     public String getSupermarket() {
         return supermarket;
     }
