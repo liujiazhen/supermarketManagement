@@ -1,7 +1,6 @@
 package com.supermarket.management.controller;
 
 import com.supermarket.management.config.security.SecurityUserDetails;
-import com.supermarket.management.entity.Order;
 import com.supermarket.management.entity.RolePermission;
 import com.supermarket.management.entity.User;
 import com.supermarket.management.service.RolePermissionService;
