@@ -61,4 +61,10 @@ public class UserServiceImpl implements UserService {
         return userDao.updateUserPassword(id,password);
 
     }
+
+    @Override
+    public int deleteSupermarket(Long id) {
+        userDao.deleteById(id);
+        return 0;
+    }
 }

@@ -16,4 +16,6 @@ public interface UserService {
     Page<User> getAllByPage(User user);
 
     int updateUserPassword(Long id, String password);
+
+    int deleteSupermarket(Long id);
 }

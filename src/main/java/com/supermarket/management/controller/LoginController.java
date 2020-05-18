@@ -80,4 +80,12 @@ public class LoginController {
         userService.updateUserPassword(user.getId(),user.getPassword());
         return 1;
     }
+
+
+    @RequestMapping("/deleteSupermarket")
+    @ResponseBody
+    public int deleteSupermarket(Long id) {
+        userService.deleteSupermarket(id);
+        return 1;
+    }
 }
