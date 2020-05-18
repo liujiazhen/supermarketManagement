@@ -4,6 +4,7 @@ import com.supermarket.management.dao.InventoryDao;
 import com.supermarket.management.dao.OrderDao;
 import com.supermarket.management.entity.Inventory;
 import com.supermarket.management.entity.Order;
+import com.supermarket.management.entity.OrderTemp;
 import com.supermarket.management.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -56,13 +58,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Page<Order> getAllByPage2(Order order) {
-        Pageable pageable = PageRequest.of(order.getPage() - 1, order.getLimit());
-        if (order.getSupermarket() != null && !"".equals(order.getSupermarket())) {
-            return orderDao.getAllBySupermarket(order.getSupermarket(), pageable);
-        } else {
-            return orderDao.getAll(pageable);
+    public List<Order> getAllByPageGroupBy(Order order) {
+        List<Object> all = orderDao.getAll(order.getSupermarket(), (order.getPage() -1) * order.getLimit(), order.getLimit());
+        List<Order> orders = new ArrayList<>();
+        for (int i = 0; i < all.size(); i++) {
+            Order temp = new Order();
+            Object[] oo = (Object[])all.get(i);
+            BigInteger b = (BigInteger) oo[0];
+            temp.setProductId(b.longValue());
+            temp.setProductName((String)oo[1]);
+            temp.setProductCategory((String)oo[2]);
+            temp.setProductUnit((String)oo[3]);
+            BigInteger b2 = (BigInteger) oo[0];
+            temp.setQty(b2.longValue());
+            orders.add(temp);
         }
+        return orders;
     }
 
     @Override

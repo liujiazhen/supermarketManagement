@@ -1,6 +1,7 @@
 package com.supermarket.management.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import org.aspectj.weaver.ast.Or;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -9,7 +10,6 @@ import java.util.Date;
 @Entity
 @Table(name = "t_order")
 public class Order implements Serializable {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

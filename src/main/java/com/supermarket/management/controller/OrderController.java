@@ -2,6 +2,7 @@ package com.supermarket.management.controller;
 
 import com.supermarket.management.config.security.SecurityUserDetails;
 import com.supermarket.management.entity.Order;
+import com.supermarket.management.entity.OrderTemp;
 import com.supermarket.management.entity.User;
 import com.supermarket.management.service.OrderService;
 import com.supermarket.management.service.UserService;
@@ -46,13 +47,13 @@ public class OrderController {
 
     @RequestMapping("/getOrderList2")
     public Map<String, Object> getProductList2(@RequestBody Order order) {
-        Page<Order> orderPage = orderService.getAllByPage2(order);
+        List<Order> orderPage = orderService.getAllByPageGroupBy(order);
 
         Map<String, Object> resultMap = new HashMap<>(4);
         resultMap.put("code", "0");
         resultMap.put("msg", "");
-        resultMap.put("data", orderPage.getContent());
-        resultMap.put("count", orderPage.getTotalElements());
+        resultMap.put("data", orderPage);
+        resultMap.put("count", orderPage.size());
         return resultMap;
     }
 
