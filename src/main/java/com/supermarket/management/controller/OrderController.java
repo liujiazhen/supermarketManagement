@@ -78,8 +78,8 @@ public class OrderController {
         Map<String, Object> resultMap = new HashMap<>(4);
         resultMap.put("code", "0");
         resultMap.put("msg", "");
-        resultMap.put("data", allSupermarket.size());
-        resultMap.put("count", allSupermarket);
+        resultMap.put("data", allSupermarket);
+        resultMap.put("count", allSupermarket.size());
         return resultMap;
     }
 

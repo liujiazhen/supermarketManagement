@@ -47,6 +47,9 @@ public class OrderServiceImpl implements OrderService {
                 Date date = cal.getTime();
                 predicateList.add(cb.between(root.get("createDate").as(Date.class), date, new Date()));
             }
+            if (order.getDateStart()!=null&&!"".equals(order.getDateStart())&&order.getDateEnd()!=null&&!"".equals(order.getDateEnd())){
+                predicateList.add(cb.between(root.get("createDate").as(Date.class),order.getDateStart(),order.getDateEnd()));
+            }
             return cb.and(predicateList.toArray(new Predicate[predicateList.size()]));
         }, pageable);
         return orderPage;

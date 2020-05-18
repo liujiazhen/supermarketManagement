@@ -9,26 +9,42 @@
 </head>
 <body style="padding: 20px 15px">
 <div class="layui-card">
-    <div class="layui-card-header">
-        商品名称：
-        <div class="layui-inline">
-            <input class="layui-input" id="namesearch" autocomplete="off">
-        </div>
-        &nbsp;&nbsp;&nbsp;&nbsp;商品分类：
-        <div class="layui-inline">
-            <input class="layui-input" id="categorysearch" autocomplete="off">
-        </div>
-        &nbsp;&nbsp;&nbsp;&nbsp;所属超市：
-        <div class="layui-input-inline">
-            <select id="supermarketName" name="supermarketName" lay-filter="supermarketName" lay-verify="required">
-                <option value="">--请选择--</option>
-            </select>
-        </div>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <button class="layui-btn" data-type="reload" id="search"><i class="layui-icon layui-icon-search"></i>查询
-        </button>
-    </div>
-    <hr/>
+    <table>
+        <tr>
+            <div class="layui-card-header">
+                商品名称：
+                <div class="layui-inline">
+                    <input class="layui-input" id="namesearch" autocomplete="off">
+                </div>
+                &nbsp;&nbsp;&nbsp;&nbsp;商品分类：
+                <div class="layui-inline">
+                    <input class="layui-input" id="categorysearch" autocomplete="off">
+                </div>
+                &nbsp;&nbsp;&nbsp;&nbsp;所属超市：
+                <div class="layui-input-inline">
+                    <select id="supermarketName" name="supermarketName" lay-filter="supermarketName" lay-verify="required">
+                        <option value="">--请选择--</option>
+                    </select>
+                </div>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <button class="layui-btn" data-type="reload" id="search"><i class="layui-icon layui-icon-search"></i>查询
+                </button>
+
+            </div>
+        </tr>
+        <tr>
+            <div class="layui-card-header">
+                创建时间：从&nbsp;&nbsp;
+                <div class="layui-inline">
+                    <input class="layui-input" id="dateStart" autocomplete="off">
+                </div>
+                &nbsp;&nbsp;到&nbsp;&nbsp;
+                <div class="layui-inline">
+                    <input class="layui-input" id="dateEnd" autocomplete="off">
+                </div>
+            </div>
+        </tr>
+    </table>
     <div class="layui-card-body">
         <table class="layui-hide" id="orderList" lay-filter="orderList"></table>
     </div>
@@ -41,6 +57,14 @@
         var table = layui.table;
         var laydate = layui.laydate;
         var form = layui.form;
+
+        laydate.render({
+            elem: '#dateStart' //指定元素
+        });
+
+        laydate.render({
+            elem: '#dateEnd' //指定元素
+        });
 
         // 加载table
         table.render({
@@ -84,7 +108,9 @@
                     where: {
                         productName: $("#namesearch").val(),
                         productCategory: $("#categorysearch").val(),
-                        supermarket: $("#supermarketsearch").val()
+                        supermarket: $("#supermarketName").val(),
+                        dateStart: $("#dateStart").val(),
+                        dateEnd: $("#dateEnd").val()
                     }
                 }, 'data');
             }
@@ -97,10 +123,10 @@
             cache: true,
             success: function (data) {
                 let res = data.data;
-                for(let j = 0; j < res.length; j++) {
-                    $("#supermarketName").append("<option value=\"" + res[j].id + "\">" + res[j].name + "</option>");
+                for (let j = 0; j < res.length; j++) {
+                    $("#supermarketName").append("<option value=\"" + res[j] + "\">" + res[j] + "</option>");
                 }
-                form.render('select', 'productName');
+                form.render('select', 'supermarketName');
             },
         });
 
