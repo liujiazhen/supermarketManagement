@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,7 +70,7 @@ public class OrderServiceImpl implements OrderService {
             temp.setProductName((String)oo[1]);
             temp.setProductCategory((String)oo[2]);
             temp.setProductUnit((String)oo[3]);
-            BigInteger b2 = (BigInteger) oo[0];
+            BigDecimal b2 = (BigDecimal) oo[4];
             temp.setQty(b2.longValue());
             orders.add(temp);
         }
