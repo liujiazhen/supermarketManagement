@@ -11,8 +11,11 @@ import java.util.List;
 @Service
 public class BillServiceImpl implements BillService {
 
-    @Autowired
-    private BillDao billDao;
+    private final BillDao billDao;
+
+    public BillServiceImpl(BillDao billDao) {
+        this.billDao = billDao;
+    }
 
     @Override
     public List<Bill> getBillList(String username, String name) {
